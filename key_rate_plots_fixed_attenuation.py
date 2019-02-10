@@ -1,25 +1,7 @@
 import numpy as np
-import random
 import matplotlib.pyplot as plt
-import matplotlib
 
-"""
-Compute the softmax function for each row of the input x.
 
-It is crucial that this function is optimized for speed because
-it will be used frequently in later code.
-You might find numpy functions np.exp, np.sum, np.reshape,
-np.max, and numpy broadcasting useful for this task. (numpy
-broadcasting documentation:
-http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-
-You should also make sure that your code works for one
-dimensional inputs (treat the vector as a row), you might find
-it helpful for your later problems.
-
-You must implement the optimization in problem 1(a) of the 
-written assignment!
-"""
 def covariance_matrix_satellite_based_entanglement(T_a, T_b, v, chi):
 	a = 1 + T_a * (v-1) + chi
 	b = 1 + T_b*(v-1) +chi
@@ -78,9 +60,7 @@ def key_rate(a, b, c, method, reference):
 def key_rate_plots_fixed_attenuation():
     """
     """
-
-
-    transmission_coefficient = np.logspace(-1.0, 0.0, num=100)
+    transmission_coefficient = np.logspace(-1.0, 0.0, num=1000)
     transmissivity_A = transmission_coefficient ** 2
     transmissivity_B = transmissivity_A
     loss_dB = -10 * np.log10(transmissivity_A * transmissivity_B)
@@ -92,10 +72,14 @@ def key_rate_plots_fixed_attenuation():
     v = np.cosh(r)
 
     a, b, c = covariance_matrix_satellite_based_entanglement(transmissivity_A, transmissivity_B, v, chi)
-    k_satellite_based_entanglement = key_rate(a, b, c, method, reference);
-    plt.plot([1, 2, 3, 4])
-    plt.ylabel('some numbers')
-    plt.show(block=True)
+    key_rate_satellite_based_entanglement = key_rate(a, b, c, method, reference);
+    plt.plot(loss_dB, key_rate_satellite_based_entanglement)
+    plt.ylabel('Keyrate (bits per pulse)')
+    plt.xlabel('Loss (dB)')
+    plt.title('Key rate of satellite-based entanglement with fixed attenuation channel')
+    plt.yscale('log')
+    plt.xlim(0,20)
+    plt.show()
 	
 if __name__ == "__main__":
     key_rate_plots_fixed_attenuation()
