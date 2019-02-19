@@ -1,6 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import turbulence_transmission_coefficient as turbulence
 
+#####################################
+# CV CM AND KEY RATE
+#######################################
 
 def covariance_matrix_satellite_based_entanglement(T_a, T_b, v, chi):
 	a = 1 + T_a * (v-1) + chi
@@ -27,7 +31,7 @@ def key_rate(a, b, c, method, reference):
     
     if reference == "A":
         if method == "homodyne":
-            nu = sqrt(b*(b-c**2/a));
+            nu = np.sqrt(b*(b-c**2/a));
         
         elif method ==  "heterodyne":
             nu = b - c**2/(a+1);
@@ -57,6 +61,10 @@ def key_rate(a, b, c, method, reference):
     key_rate = key_rate*filter;
     return key_rate
 
+#######################################################
+# PLOT KEY RATE FOR FIXED ATTENUATION #################
+##############################################    
+
 def key_rate_plots_fixed_attenuation():
     """
     """
@@ -80,6 +88,24 @@ def key_rate_plots_fixed_attenuation():
     plt.yscale('log')
     plt.xlim(0,20)
     plt.show()
+    
+    
+#################################################### 
+# PLOT KEY RATE FOR SATELLITE FADING CHANNEL
+####################################################    
+def test():
+    
+    sigma_a = np.linspace(0.02 ,7, 10)
+    chi =0.02 #excess noise at the receiver
+    ref = 'B' #reversed reconciliation
+    L= 500000 #distance from satellite to Earth : 500 km
+    wavelength = 780*1e-9
+    W0 = 0.12
+    aperture_radius = 1
+    num_simulation_points = int(1e4); #typecast to integer inorder to avoid errors
+      
+    _,tc1 = turbulence.circular_beam_wandering_trans_coef(sigma_a[6], W0 , L, wavelength, aperture_radius,  num_simulation_points, num_simulation_points)
 	
 if __name__ == "__main__":
     key_rate_plots_fixed_attenuation()
+    test()
