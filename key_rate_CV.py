@@ -19,17 +19,7 @@ def  mean_key_rate_fading_channel(transmissivity_1, transmissivity_2,n_sigma_a, 
     k_all = np.zeros([n_sigma_a, num_points]);
 
     for i in range(n_sigma_a):
-#        if turbulence_model == 'elliptic':
-#            _, tc1 = turbulence.elliptic_model_trans_coef( sigma_a[i], W0 , L, wavelength, aperture_radius,  num_points);
-#            _, tc2 = turbulence.elliptic_model_trans_coef( sigma_a[i], W0 , L, wavelength, aperture_radius,  num_points);
-#        elif turbulence_model == 'circular':
-#            _, tc1 = turbulence.circular_beam_wandering_trans_coef(sigma_a[i], W0 , L, wavelength, aperture_radius, num_points, num_points);
-#            _, tc2 = turbulence.circular_beam_wandering_trans_coef(sigma_a[i], W0 , L, wavelength, aperture_radius, num_points, num_points);
-#        else:
-#            print('invalid turbulence_model')
-#
-#        transmissivity_1 = tc1**2;
-#        transmissivity_2 = tc2**2;
+
         T1 = transmissivity_1[i,:]
         T2 = transmissivity_2[i,:]
         transmissivity = T1*T2;   
@@ -38,7 +28,6 @@ def  mean_key_rate_fading_channel(transmissivity_1, transmissivity_2,n_sigma_a, 
         k = key_rate_CV( a, b, c, mesurement_method, reconciliation_ref);
         
         mean_transmissivity[i] = np.mean(transmissivity);
-        #filter_ = k>0; # set all negative keyrate to 0
         mean_key_rate[i] = np.mean(k);
         tc_all[i,:]= T1;
         k_all[i,:]=k;
@@ -84,6 +73,8 @@ def key_rate_CV(a, b, c, method, reference):
     for i , value in enumerate(key_rate):
         if value <0:
             key_rate[i] = 0
+            
+    #set negative keyrate to zero
     filter_ = (key_rate>0)
     key_rate = key_rate*filter_;
     return key_rate

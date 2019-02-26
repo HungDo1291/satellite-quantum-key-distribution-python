@@ -16,22 +16,7 @@ def  mean_key_rate_fading_channel(transmissivity_1, transmissivity_2,n_sigma_a, 
     k_all = np.zeros([n_sigma_a, num_points]);
 
     for i in range(n_sigma_a):
-#        if turbulence_model == 'elliptic':
-#            _, tc1 = turbulence.elliptic_model_trans_coef( sigma_a[i], W0 , L, wavelength, aperture_radius,  num_points);
-#            _, tc2 = turbulence.elliptic_model_trans_coef( sigma_a[i], W0 , L, wavelength, aperture_radius,  num_points);
-#        elif turbulence_model == 'circular':
-#            _, tc1 = turbulence.circular_beam_wandering_trans_coef(sigma_a[i], W0 , L, wavelength, aperture_radius, num_points, num_points);
-#            _, tc2 = turbulence.circular_beam_wandering_trans_coef(sigma_a[i], W0 , L, wavelength, aperture_radius, num_points, num_points);
-#        else:
-#            print('invalid turbulence_model')
-#
-#        transmissivity_1 = tc1**2;
-#        transmissivity_2 = tc2**2;
 
-
-#        source = 'hybrid'
-#        r=1
-#        source_parameter = r
         T1 = transmissivity_1[i,:]
         T2 = transmissivity_2[i,:]
         k = key_rate_DV(T1, T2, detection_efficiency,\
@@ -42,7 +27,6 @@ def  mean_key_rate_fading_channel(transmissivity_1, transmissivity_2,n_sigma_a, 
         
         transmissivity = T1 * T2;   
         mean_transmissivity[i] = np.mean(transmissivity);
-        #filter_ = k>0; # set all negative keyrate to 0
         mean_key_rate[i] = np.mean(k);
 
 
@@ -61,6 +45,8 @@ def key_rate_DV(transmissivity1, transmissivity2, detection_efficiency,\
         Q, E = QE_lambda (lambd,e_0, e_d, Y_0A, Y_0B, eta_A, eta_B)
         K = Koashi_Preskill_keyrate(q,Q, E, f);
         K_max_lambd = np.max(K, axis = 0)
+        
+        #set negative key rate to 0
         filter_ = (K_max_lambd>0)
         K_max_lambd = K_max_lambd * filter_
         return K_max_lambd
@@ -68,6 +54,8 @@ def key_rate_DV(transmissivity1, transmissivity2, detection_efficiency,\
         r = source_parameter
         Q,E = QE_hybrid_no_loss(r, e_0, e_d,  Y_0A, Y_0B, eta_A, eta_B);
         K = Koashi_Preskill_keyrate(q,Q, E, f);
+        
+        #set negative keyrate to 0
         filter_ = (K > 0)
         K = K * filter_
         return K
