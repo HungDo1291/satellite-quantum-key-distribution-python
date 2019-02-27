@@ -6,8 +6,56 @@ Created on Mon Feb 18 16:35:05 2019
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+
 from scipy.special import iv #Modified Bessel function of the first kind of real order.
-from scipy.special import lambertw
+from scipy.special import lambertw #lambert_W function
+
+"""
+TEST FUNCTIONS: still need some corrections to match the new function for generating transmissivity
+"""
+
+def test_turbulence():
+    
+    sigma_a = np.linspace(0.01 ,0.51, 7)
+    n_sigma = len(sigma_a)
+    chi = 0.02 #excess noise at the receiver
+    ref = 'B' #reversed reconciliation
+    L= 500000 #distance from satellite to Earth : 500 km
+    wavelength = 780*1e-9
+    W0 = 0.12
+    aperture_radius = 1
+    num_simulation_points = int(1e5); #typecast to integer inorder to avoid errors
+      
+    _, tc1 = circular_beam_wandering_trans_coef(sigma_a[4], W0 , L, \
+        wavelength, aperture_radius,  num_simulation_points, num_simulation_points, test = True)
+    _, tc2 = elliptic_model_trans_coef(sigma_a[4], W0 , L, \
+        wavelength, aperture_radius,  num_simulation_points, test = True)
+    
+    fig, ax = plt.subplots()
+    for i in range(n_sigma):
+        _, tc2 = elliptic_model_trans_coef(sigma_a[i], W0 , L, wavelength, aperture_radius,  num_simulation_points)    
+        plt.hist(tc2**2, bins = 100, histtype = 'step', density = True, label = '\sigma = '+str(sigma_a[i]))
+    plt.legend()
+    plt.ylabel('Probability')
+    plt.xlabel('Transmittance T=t^2')
+    plt.yscale('log')
+    plt.title('Beam-wandering model')
+    #plt.ylim((1/num_simulation_points, 1e2))
+    fig.show()
+    
+    fig2, ax2 = plt.subplots()
+    for i in range(n_sigma):
+        _, tc1 = turbulence.circular_beam_wandering_trans_coef(sigma_a[i], W0 , L, wavelength, aperture_radius, num_simulation_points, num_simulation_points)    
+        plt.hist(tc1**2, bins = 100, histtype = 'step', density = True, label = '\sigma = '+str(sigma_a[i]))
+    plt.legend()
+    plt.ylabel('Probability')
+    plt.xlabel('Transmittance T=t^2')
+    plt.yscale('log')
+    plt.title('Elliptical model')
+    #plt.ylim((1/num_simulation_points, 1e2))
+    fig2.show()
+
 #################################
 #CIRCULAR FADING CHANNEL #############################
 

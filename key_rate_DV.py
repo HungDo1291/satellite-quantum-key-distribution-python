@@ -6,6 +6,49 @@ Created on Thu Feb 21 12:04:16 2019
 """
 import numpy as np
 import turbulence_transmission_coefficient as turbulence
+import matplotlib.pyplot as plt
+
+"""
+TESTS
+"""
+def test_DV_key_rate():
+    f = 1.22
+    q = 1/2
+    e_0 = 1/2
+    e_d = 0.015
+
+    Y_0A =6.02e-6
+    Y_0B = Y_0A
+    detection_efficiency = 0.145
+    
+    transmissivity1 = np.logspace(-10, 0, 100);
+    transmissivity2 = transmissivity1
+    loss_dB = -10*np.log10(transmissivity1*transmissivity2);
+    
+    source = 'hybrid'
+    r=1
+    source_parameter = r
+    K_hybrid = key_rate_DV(transmissivity1, transmissivity2, detection_efficiency,\
+                Y_0A, Y_0B, e_0,e_d, q, f, source, source_parameter)
+    
+    source = 'PDC_II'
+    mu = np.linspace(0.01,0.5,int(0.5/0.01));
+    lambd = mu/2;
+    source_parameter = lambd
+    K_PDCII = key_rate_DV(transmissivity1, transmissivity2, detection_efficiency,\
+                Y_0A, Y_0B, e_0,e_d, q, f, source, source_parameter)
+    
+    fig1, ax1 = plt.subplots()
+    plt.plot(loss_dB, K_hybrid, label = 'hybrid')
+    print(loss_dB.shape, K_PDCII.shape, transmissivity1.shape)
+    plt.plot(loss_dB, K_PDCII, label = 'PDC type II')
+    plt.yscale('log')
+    plt.grid()
+    plt.legend()
+    plt.show()
+"""
+FUNCTIONS
+"""
 
 def  mean_key_rate_fading_channel(transmissivity_1, transmissivity_2,n_sigma_a, num_points , \
                                   source, source_parameter, detection_efficiency,Y_0A, Y_0B, e_0,e_d, q, f):

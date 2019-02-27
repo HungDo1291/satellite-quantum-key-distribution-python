@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import turbulence_transmission_coefficient as turbulence
 import key_rate_CV
 import key_rate_DV
+import hybrid_entanglement_swapping as hybrid
 
 
 ##########################
@@ -87,8 +88,8 @@ def key_rate_plots_fixed_attenuation_source_on_Alice():
     plt.yscale('log')
     plt.legend()
     plt.grid()
-    plt.savefig('fixed_attenuation_source_on_Alice.eps', format='eps', dpi=1000)
-    plt.savefig('fixed_attenuation_source_on_Alice.jpg', format='jpg', dpi=1000)
+    plt.savefig('figures/fixed_attenuation_source_on_Alice.eps', format='eps', dpi=1000)
+    plt.savefig('figures/fixed_attenuation_source_on_Alice.jpg', format='jpg', dpi=1000)
 
     plt.show()
     
@@ -110,6 +111,7 @@ def key_rate_plots_satellite_fading_channel(generate_transmissivity= False):
         transmissivity_1, transmissivity_2 = turbulence.generate_transmissivity(sigma_a, turbulence_model,\
                                                      W0 , L, wavelength, aperture_radius,  num_points )
     else: #load transmissivity from file
+        """ !!! still need to save and load sigma_a as well !!!"""
         transmissivity_1  = np.fromfile('transmissivity_1_'+ turbulence_model+'.dat', dtype = float).reshape([n_sigma_a, num_points])
         transmissivity_2  = np.fromfile('transmissivity_1_'+ turbulence_model+'.dat', dtype = float).reshape([n_sigma_a, num_points])
 
@@ -171,96 +173,15 @@ def key_rate_plots_satellite_fading_channel(generate_transmissivity= False):
     plt.savefig(turbulence_model+'.jpg', format='jpg', dpi=1000)
     fig.show()
     
-
     
-    
-
-#################################################
-#   TEST FUNCTIONS
-#################################################
-def test_turbulence():
-    
-    sigma_a = np.linspace(0.01 ,0.51, 7)
-    n_sigma = len(sigma_a)
-    chi = 0.02 #excess noise at the receiver
-    ref = 'B' #reversed reconciliation
-    L= 500000 #distance from satellite to Earth : 500 km
-    wavelength = 780*1e-9
-    W0 = 0.12
-    aperture_radius = 1
-    num_simulation_points = int(1e5); #typecast to integer inorder to avoid errors
-      
-    _, tc1 = turbulence.circular_beam_wandering_trans_coef(sigma_a[4], W0 , L, \
-        wavelength, aperture_radius,  num_simulation_points, num_simulation_points, test = True)
-    _, tc2 = turbulence.elliptic_model_trans_coef(sigma_a[4], W0 , L, \
-        wavelength, aperture_radius,  num_simulation_points, test = True)
-    
-    fig, ax = plt.subplots()
-    for i in range(n_sigma):
-        _, tc2 = turbulence.elliptic_model_trans_coef(sigma_a[i], W0 , L, wavelength, aperture_radius,  num_simulation_points)    
-        plt.hist(tc2**2, bins = 100, histtype = 'step', density = True, label = '\sigma = '+str(sigma_a[i]))
-    plt.legend()
-    plt.ylabel('Probability')
-    plt.xlabel('Transmittance T=t^2')
-    plt.yscale('log')
-    plt.title('Beam-wandering model')
-    #plt.ylim((1/num_simulation_points, 1e2))
-    fig.show()
-    
-    fig2, ax2 = plt.subplots()
-    for i in range(n_sigma):
-        _, tc1 = turbulence.circular_beam_wandering_trans_coef(sigma_a[i], W0 , L, wavelength, aperture_radius, num_simulation_points, num_simulation_points)    
-        plt.hist(tc1**2, bins = 100, histtype = 'step', density = True, label = '\sigma = '+str(sigma_a[i]))
-    plt.legend()
-    plt.ylabel('Probability')
-    plt.xlabel('Transmittance T=t^2')
-    plt.yscale('log')
-    plt.title('Elliptical model')
-    #plt.ylim((1/num_simulation_points, 1e2))
-    fig2.show()
-    
-def test_DV_key_rate():
-    f = 1.22
-    q = 1/2
-    e_0 = 1/2
-    e_d = 0.015
-
-    Y_0A =6.02e-6
-    Y_0B = Y_0A
-    detection_efficiency = 0.145
-    
-    transmissivity1 = np.logspace(-10, 0, 100);
-    transmissivity2 = transmissivity1
-    loss_dB = -10*np.log10(transmissivity1*transmissivity2);
-    
-    source = 'hybrid'
-    r=1
-    source_parameter = r
-    K_hybrid = key_rate_DV.key_rate_DV(transmissivity1, transmissivity2, detection_efficiency,\
-                Y_0A, Y_0B, e_0,e_d, q, f, source, source_parameter)
-    
-    source = 'PDC_II'
-    mu = np.linspace(0.01,0.5,int(0.5/0.01));
-    lambd = mu/2;
-    source_parameter = lambd
-    K_PDCII = key_rate_DV.key_rate_DV(transmissivity1, transmissivity2, detection_efficiency,\
-                Y_0A, Y_0B, e_0,e_d, q, f, source, source_parameter)
-    
-    fig1, ax1 = plt.subplots()
-    plt.plot(loss_dB, K_hybrid, label = 'hybrid')
-    print(loss_dB.shape, K_PDCII.shape, transmissivity1.shape)
-    plt.plot(loss_dB, K_PDCII, label = 'PDC type II')
-    plt.yscale('log')
-    plt.grid()
-    plt.legend()
-    plt.show()
-
 if __name__ == "__main__":
-    #key_rate_plots_fixed_attenuation()
-    #test_turbulence()
-    #test_DV_key_rate()
-
-    key_rate_plots_satellite_fading_channel()
-    key_rate_plots_fixed_attenuation_source_on_Alice()
+    #test functions
+    # turbulence.test_turbulence()
+    #key_rate_DV.test_DV_key_rate()
+    hybrid.test_hybrid()
+    
+    # key_rate_plots_fixed_attenuation()
+    #key_rate_plots_satellite_fading_channel()
+    #key_rate_plots_fixed_attenuation_source_on_Alice()
     
     
