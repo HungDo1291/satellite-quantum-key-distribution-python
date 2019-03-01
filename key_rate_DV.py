@@ -8,6 +8,8 @@ import numpy as np
 import turbulence_transmission_coefficient as turbulence
 import matplotlib.pyplot as plt
 
+import hybrid_entanglement_swapping as hybrid
+
 """
 TESTS
 """
@@ -80,12 +82,12 @@ def  mean_key_rate_fading_channel(transmissivity_1, transmissivity_2,n_sigma_a, 
 
 def key_rate_DV(transmissivity1, transmissivity2, detection_efficiency,\
                 Y_0A, Y_0B, e_0,e_d, q, f, source, source_parameter):
-    eta_B = transmissivity1 * detection_efficiency;
-    eta_A = transmissivity2 * detection_efficiency;
+#    eta_B = transmissivity1 * detection_efficiency;
+#    eta_A = transmissivity2 * detection_efficiency;
     
     if source == 'PDC_II':
         lambd = source_parameter
-        Q, E = QE_lambda (lambd,e_0, e_d, Y_0A, Y_0B, eta_A, eta_B)
+        Q, E = QE_lambda (lambd,e_0, e_d, Y_0A, Y_0B, transmissivity1, transmissivity2, detection_efficiency)
         K = Koashi_Preskill_keyrate(q,Q, E, f);
         K_max_lambd = np.max(K, axis = 0)
         
@@ -95,7 +97,7 @@ def key_rate_DV(transmissivity1, transmissivity2, detection_efficiency,\
         return K_max_lambd
     elif source == 'hybrid':
         r = source_parameter
-        Q,E = QE_hybrid_no_loss(r, e_0, e_d,  Y_0A, Y_0B, eta_A, eta_B);
+        Q,E = QE_hybrid( r, e_0, e_d,  Y_0A, Y_0B, transmissivity1, transmissivity2, detection_efficiency);
         K = Koashi_Preskill_keyrate(q,Q, E, f);
         
         #set negative keyrate to 0
@@ -110,8 +112,44 @@ def Koashi_Preskill_keyrate(q,Q_lambda, E_lambda, f):
     R = q* Q_lambda * (1-(f+1)*binary_entropy(E_lambda)); 
     return R
 
-def QE_hybrid_no_loss(r, e_0, e_d,  Y_0A, Y_0B, eta_A, eta_B):
+def QE_hybrid(r, e_0, e_d,  Y_0A, Y_0B, transmissivity_A, transmissivity_B, detection_efficiency):
+    eta_DV_entanglement = transmissivity_A*transmissivity_B
+    loss  = 0#1 - transmissivity_A * transmissivity_B
+    eta_A = detection_efficiency
+    eta_B = detection_efficiency
     
+    length_loss = len(eta_DV_entanglement) #len(loss)
+    
+    
+    #find g_opt numerically. because using g = tanhr will results in inf in T_11kk from time to time
+    # need to generalize this
+
+    r = 2.395
+    g = 0.9952380952380951
+
+    V_an = 0.5 * ( (1-loss)* np.exp(2*r) + loss );
+    V_sq = 0.5 * ( (1-loss)* np.exp(-2*r) + loss) ;
+    tau = 0.5 * V_an *(1 - 1/g)**2  + 0.5 * V_sq *(1 + 1 / g)**2;
+    gamma = g**2*(2*tau + 1) ; #gamma is now a function of loss
+    
+    k_max =100
+    n_max = 50
+    EQ = np.zeros(length_loss)
+    Q = np.zeros(length_loss)
+    for n in range(n_max+1):
+
+        #P_n is a function of loss
+        P_n = hybrid.probability_n_photon_pair(n, k_max, eta_DV_entanglement, gamma, g)
+        Y_n= yield_n(n, eta_A, eta_B, Y_0A, Y_0B)
+        e_n = error_rate(n, e_0, e_d, eta_A, eta_B, Y_n)
+        Q += Y_n * P_n
+        EQ +=  e_n * Y_n * P_n
+    E = EQ/Q;
+    return Q, E #function of loss
+        
+        
+def QE_hybrid_no_loss(r, e_0, e_d,  Y_0A, Y_0B, eta_A, eta_B):
+    #this function is deprecated
     g = np.tanh(r);
     P0 = (1-g**2)/2;
     P1 = (1+g**2)/2;
@@ -129,7 +167,9 @@ def QE_hybrid_no_loss(r, e_0, e_d,  Y_0A, Y_0B, eta_A, eta_B):
     E = EQ/Q;
     return Q, E
 
-def QE_lambda (lambd,e_0, e_d, Y_0A, Y_0B, eta_A, eta_B):
+def QE_lambda (lambd,e_0, e_d, Y_0A, Y_0B, transmissivity_A, transmissivity_B, detection_efficiency):
+    eta_A = transmissivity_A * detection_efficiency
+    eta_B = transmissivity_B * detection_efficiency
     #type cast lamd to array of array so that we can transpose it
     lambd = np.array([lambd])
     eta_A = np.array([eta_A])
@@ -151,6 +191,21 @@ def E_lambda_times_Q_lambda(Q_lambda,lambd, e_0, e_d,  etaA, etaB):
     temp2 = (1 + lambd.T.dot(etaA))*(1 + lambd.T.dot(etaB))*(1 + lambd.T.dot(etaA) + lambd.T.dot(etaB) - lambd.T.dot(etaA*etaB));
     EQ = e_0*Q_lambda - temp1/temp2;
     return EQ
+
+def error_rate(n, e_0, e_d, eta_A, eta_B, Y_n):
+    if n ==1:
+        e_n = e_0 - (e_0 - e_d) * eta_A * eta_B / Y_n
+    elif n == 2:
+        e_n = 2*(e_0 - e_d )/ (3*Y_n) * (1-(1-eta_A)**2)*(1-(1-eta_B)**2)
+    else: # for all larger n
+        temp1 = 2*(e_0 - e_d)/(n+1)/Y_n
+        temp2 = (1-(1-eta_A)**(n+1) * (1- eta_B)**(n+1) ) / ( 1-(1- eta_A)*(1 - eta_B) )
+        if eta_A != eta_B:
+            temp3 = ((1 - eta_A)**(n + 1) - (1- eta_B)**(n+1) )/ (eta_B - eta_A)
+        else: # this is the limit of temp3 when eta_B tends to eta_A. Used l'hopital rule
+            temp3 = (n+1) * (1-eta_A)**n     
+        e_n = temp1 *( temp2 - temp3)
+    return e_n
 
 def yield_n(n, etaA, etaB, Y0A, Y0B):
     temp1 = 1-(1-Y0A)*(1-etaA)**n;

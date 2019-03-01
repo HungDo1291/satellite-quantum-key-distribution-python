@@ -117,7 +117,7 @@ def test_hybrid():
 def test_probability_n_photon_pair():
     #find E_LN in different conditions of loss and efficiency
     eta = 1
-    l = 0.99999999
+    l = 0.2
     k_max = 100
     
     #find g_opt numerically. because using g = tanhr will results in inf in T_11kk from time to time
@@ -161,7 +161,6 @@ FUNCTIONS
 
 def probability_n_photon_pair(n, k_max, eta, gamma, g):
     #print('n' ,n)
-    
     lenghth_k = k_max+2;
     P_total =0;
     for i in range(lenghth_k):

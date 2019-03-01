@@ -78,8 +78,8 @@ def generate_transmissivity(sigma_a, turbulence_model, W0 , L, wavelength, apert
         transmissivity_1[i,:] = tc1**2;
         transmissivity_2[i,:] = tc2**2;
         
-    transmissivity_1.tofile('transmissivity_1_' + turbulence_model + '.dat')
-    transmissivity_2.tofile('transmissivity_2_' + turbulence_model + '.dat')
+    transmissivity_1.tofile('data/transmissivity_1_' + turbulence_model + '.dat')
+    transmissivity_2.tofile('data/transmissivity_2_' + turbulence_model + '.dat')
 
     return transmissivity_1, transmissivity_2
 

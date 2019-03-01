@@ -50,8 +50,8 @@ def key_rate_plots_fixed_attenuation_source_on_Alice():
     chi = 0.02
     method = 'homodyne'
     reference = 'B'
-    r = 1
-    v = np.cosh(r)
+    r = 2.395
+    v = np.cosh(2*r)
 
     a, b, c = key_rate_CV.covariance_matrix(transmissivity_A, transmissivity_B, v, chi, 'direct transmission')
     key_rate_cv = key_rate_CV.key_rate_CV(a, b, c, method, reference);
@@ -73,7 +73,7 @@ def key_rate_plots_fixed_attenuation_source_on_Alice():
                     Y_0A, Y_0B, e_0,e_d, q, f, 'PDC_II', lambd)
     
     #hybrid
-    r= 2.4
+    r= r
     k_dv_hybrid = key_rate_DV.key_rate_DV(transmissivity_A, transmissivity_B, detection_efficiency,\
                 Y_0A, Y_0B, e_0,e_d, q, f, 'hybrid', r)
     
@@ -178,10 +178,10 @@ if __name__ == "__main__":
     #test functions
     # turbulence.test_turbulence()
     #key_rate_DV.test_DV_key_rate()
-    hybrid.test_hybrid()
+    #hybrid.test_hybrid()
     
     # key_rate_plots_fixed_attenuation()
     #key_rate_plots_satellite_fading_channel()
-    #key_rate_plots_fixed_attenuation_source_on_Alice()
+    key_rate_plots_fixed_attenuation_source_on_Alice()
     
     
