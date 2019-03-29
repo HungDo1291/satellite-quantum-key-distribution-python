@@ -9,14 +9,20 @@ import matplotlib.pyplot as plt
 #for surface plotting
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-
-
+#for latex in matplotlib
+import matplotlib
+#for font in matplotlib
+matplotlib.rcParams['text.usetex'] = True
+font = {'family' : 'serif',
+  'weight' : 'bold',
+  'size' : 16}
+matplotlib.rc('font', **font)
 """
 TESTS
 """
 def test_hybrid():
 
-    r = np.linspace(0.1,2, int(2/0.1));
+    r = np.linspace(0.1,2.4, int(2/0.1));
     length_r = len(r)
     k_max = 100
     
@@ -32,19 +38,19 @@ def test_hybrid():
     _,_,E_LN_PPT_1_0 = f_ELN( eta,loss, r, g_opt_PPT, k_max, 1); #dimension =1 when only r is a free variable.g = g_opt_PPT = tanh r. E_LN is a 1D matrix
     
     eta = 1
-    loss = 0.2
+    loss = 0.5
     _,_,E_LN_1_0p2 = f_ELN( eta,loss, r, g, k_max, 2);  
     g_opt_LN_1_0p2, E_max_LN_1_0p2 = g_tunning(E_LN_1_0p2, length_r, g);
     _,_,E_LN_PPT_1_0p2 = f_ELN( eta,loss, r, g_opt_PPT, k_max, 1);  
     
-    eta = 0.7
+    eta = 0.5
     loss = 0
     _,_,E_LN_0p7_0 = f_ELN( eta,loss, r, g, k_max, 2);  
     g_opt_LN_0p7_0, E_max_LN_0p7_0 = g_tunning(E_LN_0p7_0, length_r, g);
     _,_,E_LN_PPT_0p7_0 = f_ELN( eta,loss, r, g_opt_PPT, k_max, 1); 
     
-    eta = 0.7
-    loss = 0.2
+    eta = 0.5
+    loss = 0.5
     _,_,E_LN_0p7_0p2 = f_ELN( eta,loss, r, g, k_max, 2);  
     g_opt_LN_0p7_0p2, E_max_LN_0p7_0p2 = g_tunning(E_LN_0p7_0p2, length_r, g);
     _,_,E_LN_PPT_0p7_0p2 = f_ELN( eta,loss, r, g_opt_PPT, k_max, 1);  
@@ -66,6 +72,8 @@ def test_hybrid():
 #        E_LN[i] = np.log2( np.matrix.trace ( np.sqrt ( rho_PT * (rho_PT.T) )));
     
     # PLOTTING
+    
+
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     X, Y = np.meshgrid(g, r)
@@ -73,25 +81,29 @@ def test_hybrid():
                        linewidth=0, antialiased=False)
     ax.set_xlabel('g')
     ax.set_ylabel('r')
-    ax.set_zlabel('E_{LN}')
+    ax.set_zlabel('$E_{LN}$')
     # Add a color bar which maps values to colors.
     fig.colorbar(surf, shrink=0.5, aspect=5)
     plt.show()
     
+    
+    
     plt.figure()
-    plt.plot(r,E_max_LN_1_0,'k-', label = 'E^{max}_{LN} \eta =1.0, l=0.0')
-    plt.plot(r,E_max_LN_1_0p2,'b-', label = 'E^{max}_{LN} \eta =1.0, l=0.2')
-    plt.plot(r,E_max_LN_0p7_0,'g-', label = 'E^{max}_{LN} \eta =0.7, l=0.0')
-    plt.plot(r,E_max_LN_0p7_0p2,'r-', label = 'E^{max}_{LN} \eta = 0.7, l=0.2')
-    plt.plot(r,E_LN_PPT_1_0,'k--', label = 'E^{PPT}_{LN} \eta =1.0, l=0.0')
-    plt.plot(r,E_LN_PPT_1_0p2,'b--', label = 'E^{PPT}_{LN} \eta =1.0, l=0.2')
-    plt.plot(r,E_LN_PPT_0p7_0,'g--', label = 'E^{PPT}_{LN} \eta =0.7, l=0.0')
-    plt.plot(r,E_LN_PPT_0p7_0p2,'r--', label = 'E^{PPT}_{LN} \eta = 0.7, l=0.2')
+    plt.plot(r,E_max_LN_1_0,'k-', label = '$E^{max}_{LN}$ when $T=1$')
+    plt.plot(r,E_max_LN_1_0p2,'b-', label = '$E^{max}_{LN}$ when $T=0.5$')
+    #plt.plot(r,E_max_LN_0p7_0,'g-', label = '$E^{max}_{LN}$ when $\eta =0.5, l=0.0$')
+    #plt.plot(r,E_max_LN_0p7_0p2,'r-', label = '$E^{max}_{LN}$ when $\eta = 0.5, l=0.5$')
+    #plt.plot(r,E_LN_PPT_1_0,'k--', label = 'E^{PPT}_{LN} \eta =1.0, l=0.0')
+    #plt.plot(r,E_LN_PPT_1_0p2,'b--', label = 'E^{PPT}_{LN} \eta =1.0, l=0.5')
+    #plt.plot(r,E_LN_PPT_0p7_0,'g--', label = 'E^{PPT}_{LN} \eta =0.7, l=0.0')
+    #plt.plot(r,E_LN_PPT_0p7_0p2,'r--', label = 'E^{PPT}_{LN} \eta = 0.7, l=0.5')
     #plt.plot(r,E_LN,'k:', label = 'E_{PPT}^{LN} in takeda15')
     
-    plt.xlabel('r')
-    plt.ylabel('Logarithmic negativity E_{LN}')
-    plt.legend()
+    plt.xlabel('Squeezing parameter r')
+    plt.ylabel(r'Logarithmic negativity $E_{LN}$')#, fontsize=11)
+    lgd = plt.legend()
+    plt.grid()
+    plt.savefig('figures/E_LN.jpg', format='jpg', dpi=1000, bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.show()
     
     plt.figure()
@@ -107,9 +119,9 @@ def test_hybrid():
 #        'g^{opt}_{LN} when \eta =0.7, l=0',...
 #        'g^{opt}_{LN} when \eta =0.7, l=0.2',...
 #        'g^{PPT}_{LN} = tanh r','Location','bestoutside')
-    plt.title('g^{opt} ')
+    plt.title('$g^{opt} $')
     plt.xlabel('r')
-    plt.ylabel('g^{opt}')
+    plt.ylabel('$g^{opt}$')
     plt.show()
     
     return r, g, g_opt_LN_1_0p2, E_max_LN_1_0p2
